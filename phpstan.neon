@@ -1,0 +1,7 @@
+includes:
+	- vendor/phpstan/phpstan-mockery/extension.neon
+
+
+parameters:
+	ignoreErrors:
+	    - '#Parameter .* MicroModule\\EventQueue\\Domain\\EventHandling\\QueueEventInterface.* expects Broadway\\Serializer\\Serializable, MicroModule\\EventQueue\\Domain\\EventHandling\\ShouldQueue given.*#'
