@@ -25,4 +25,22 @@ class EventFactoryDataProvider
             ],
         ];
     }
+
+    /**
+     * @return mixed[]
+     */
+    public function getMakeEventThrowsExceptionIfNotAllowedEventData(): array
+    {
+        return [
+            [
+                'MicroModule\EventQueue\Tests\Unit\DataProvider\SimpleTestEventNonExistent',
+                [
+                    'data' => [
+                        'hello',
+                        'it is a test',
+                    ],
+                ],
+            ],
+        ];
+    }
 }

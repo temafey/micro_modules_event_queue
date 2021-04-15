@@ -37,16 +37,13 @@ class EventFactoryTest extends TestCase
      *
      * @covers \MicroModule\EventQueue\Application\EventHandling\EventFactory::makeEvent
      *
-     * @dataProvider \MicroModule\EventQueue\Tests\Unit\DataProvider\EventFactoryDataProvider::getMakeEventReturnsAllowedEventData
+     * @dataProvider \MicroModule\EventQueue\Tests\Unit\DataProvider\EventFactoryDataProvider::getMakeEventThrowsExceptionIfNotAllowedEventData
      *
-     * @param mixed[] $allowedEvents
      * @param mixed[] $serialized
      */
     public function testMakeEventThrowsExceptionIfNotAllowedEvent(
-        array $allowedEvents,
         string $eventName,
         array $serialized,
-        string $expectedEvent
     ): void {
         $eventFactory = new EventFactory();
 

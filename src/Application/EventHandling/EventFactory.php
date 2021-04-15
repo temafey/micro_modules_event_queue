@@ -41,6 +41,10 @@ class EventFactory implements EventFactoryInterface
      */
     public function makeEvent(string $eventName, array $serialized): EventInterface
     {
+        if (class_exists($eventName)) {
+            return $eventName::deserialize($serialized);
+        }
+
         if (!isset($this->allowedEvents[$eventName])) {
             throw new EventDoesNotExist(sprintf('Event \'%s\' doesn\'t exist.', $eventName));
         }
