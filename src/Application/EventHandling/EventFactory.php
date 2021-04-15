@@ -52,8 +52,6 @@ class EventFactory implements EventFactoryInterface
     /**
      * Make and return event stream aggregator.
      *
-     * @psalm-sup
-     *
      * @return DomainEventStream<int, DomainMessage>
      */
     public function makeEventStream(EventInterface $event): DomainEventStream

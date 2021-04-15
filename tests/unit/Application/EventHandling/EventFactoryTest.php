@@ -13,9 +13,12 @@ class EventFactoryTest extends TestCase
     /**
      * @group unit
      *
-     * @covers \MicroModule\EventQueue\Application\EventHandling\EventFactory::makeEvent
+     * @covers       \MicroModule\EventQueue\Application\EventHandling\EventFactory::makeEvent
      *
      * @dataProvider \MicroModule\EventQueue\Tests\Unit\DataProvider\EventFactoryDataProvider::getMakeEventReturnsAllowedEventData
+     *
+     * @param mixed[] $allowedEvents
+     * @param mixed[] $serialized
      */
     public function testMakeEventReturnsAllowedEvent(
         array $allowedEvents,
@@ -35,6 +38,9 @@ class EventFactoryTest extends TestCase
      * @covers \MicroModule\EventQueue\Application\EventHandling\EventFactory::makeEvent
      *
      * @dataProvider \MicroModule\EventQueue\Tests\Unit\DataProvider\EventFactoryDataProvider::getMakeEventReturnsAllowedEventData
+     *
+     * @param mixed[] $allowedEvents
+     * @param mixed[] $serialized
      */
     public function testMakeEventThrowsExceptionIfNotAllowedEvent(
         array $allowedEvents,

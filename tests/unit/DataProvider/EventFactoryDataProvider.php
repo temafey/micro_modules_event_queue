@@ -6,6 +6,9 @@ namespace MicroModule\EventQueue\Tests\Unit\DataProvider;
 
 class EventFactoryDataProvider
 {
+    /**
+     * @return mixed[]
+     */
     public function getMakeEventReturnsAllowedEventData(): array
     {
         return [
@@ -15,11 +18,11 @@ class EventFactoryDataProvider
                 [
                     'data' => [
                         'hello',
-                        'it is a test'
-                    ]
+                        'it is a test',
+                    ],
                 ],
-                'MicroModule\EventQueue\Tests\Unit\DataProvider\SimpleTestEvent'
-            ]
+                'MicroModule\EventQueue\Tests\Unit\DataProvider\SimpleTestEvent',
+            ],
         ];
     }
 }
