@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace MicroModule\EventQueue\Application\EventHandling;
 
-use MicroModule\EventQueue\Domain\EventHandling\EventFactoryInterface;
-use MicroModule\EventQueue\Domain\EventHandling\EventInterface;
 use Assert\Assertion;
 use Assert\AssertionFailedException;
 use Broadway\EventHandling\EventBus;
@@ -14,6 +12,8 @@ use Enqueue\Util\JSON;
 use Interop\Queue\Context;
 use Interop\Queue\Message;
 use Interop\Queue\Processor;
+use MicroModule\EventQueue\Domain\EventHandling\EventFactoryInterface;
+use MicroModule\EventQueue\Domain\EventHandling\EventInterface;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -45,10 +45,6 @@ abstract class QueueEventProcessor implements Processor, TopicSubscriberInterfac
 
     /**
      * QueueEventProcessor constructor.
-     *
-     * @param EventBus              $eventBus
-     * @param EventFactoryInterface $eventFactory
-     * @param LoggerInterface       $log
      */
     public function __construct(
         EventBus $eventBus,
@@ -62,9 +58,6 @@ abstract class QueueEventProcessor implements Processor, TopicSubscriberInterfac
 
     /**
      * Process enqueue message.
-     *
-     * @param Message $message
-     * @param Context $context
      *
      * @return object|string
      */
@@ -88,8 +81,6 @@ abstract class QueueEventProcessor implements Processor, TopicSubscriberInterfac
     /**
      * Make EventBus event.
      *
-     * @param Message $message
-     *
      * @return mixed[]
      *
      * @throws AssertionFailedException
@@ -98,9 +89,9 @@ abstract class QueueEventProcessor implements Processor, TopicSubscriberInterfac
     {
         $data = JSON::decode($message->getBody());
         Assertion::keyExists($data, 'event');
-        Assertion::keyExists($data, 'serialize');
+        Assertion::keyExists($data, 'serialized');
         $eventName = $data['event'];
-        $serialized = $data['serialize'];
+        $serialized = $data['serialized'];
 
         if (!is_array($serialized)) {
             $serialized = [$serialized];
@@ -112,8 +103,6 @@ abstract class QueueEventProcessor implements Processor, TopicSubscriberInterfac
 
     /**
      * Return enqueue command routers.
-     *
-     * @return string
      */
     public static function getSubscribedTopics(): string
     {

@@ -4,6 +4,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns="https://getpsalm.org/schema/config"
     xsi:schemaLocation="https://getpsalm.org/schema/config file:///app/vendor/vimeo/psalm/config.xsd"
+    cacheDirectory="vendor/vimeo/psalm/.cache/"
 >
     <projectFiles>
         <directory name="src" />
@@ -49,5 +50,8 @@
         <RawObjectIteration errorLevel="info" />
 
         <InvalidStringClass errorLevel="info" />
+
+        <TooManyTemplateParams errorLevel="info" />
+        <MoreSpecificImplementedParamType errorLevel="info" />
     </issueHandlers>
 </psalm>

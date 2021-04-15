@@ -10,10 +10,12 @@ fix-permission: ## fix permission for docker env
 	sudo chown -R $(shell whoami):$(shell whoami) *
 	sudo chown -R $(shell whoami):$(shell whoami) .docker/*
 
+.PHONY: install
+install: build composer-install
+
 .PHONY: build
 build: ## build environment and initialize composer and project dependencies
 	docker-compose build
-	make composer-install
 
 .PHONY: stop
 stop:
@@ -54,7 +56,7 @@ lint: ## checks syntax of PHP files
 
 .PHONY: layer
 layer: ## Check issues with layers (deptrac tool)
-	docker-compose run --rm --no-deps php sh -lc './vendor/bin/deptrac analyze --formatter-graphviz=0'
+	docker-compose run --rm --no-deps php sh -lc './vendor/bin/deptrac analyze'
 
 .PHONY: logs
 logs: ## look for service logs

@@ -7,8 +7,8 @@ namespace MicroModule\EventQueue\Application\EventHandling;
 use MicroModule\Base\Domain\Exception\CriticalException;
 
 /**
- * Class EventDoesNotExists\.
+ * Class EventDoesNotExist\.
  */
-class EventDoesNotExists extends CriticalException
+class EventDoesNotExist extends CriticalException
 {
 }

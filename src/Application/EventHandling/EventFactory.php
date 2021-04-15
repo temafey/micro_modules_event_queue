@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace MicroModule\EventQueue\Application\EventHandling;
 
-use MicroModule\EventQueue\Domain\EventHandling\EventFactoryInterface;
-use MicroModule\EventQueue\Domain\EventHandling\EventInterface;
 use Broadway\Domain\DomainEventStream;
 use Broadway\Domain\DomainMessage;
 use Broadway\Domain\Metadata;
+use MicroModule\EventQueue\Domain\EventHandling\EventFactoryInterface;
+use MicroModule\EventQueue\Domain\EventHandling\EventInterface;
 
 /**
  * Class EventFactory.
@@ -16,30 +16,45 @@ use Broadway\Domain\Metadata;
 class EventFactory implements EventFactoryInterface
 {
     /**
+     * Allowed events in format eventKey => FQCN.
+     *
+     * @var array<string, string>
+     */
+    protected array $allowedEvents;
+
+    /**
+     * EventFactory constructor.
+     *
+     * @param array<string, string> $allowedEvents
+     */
+    public function __construct(array $allowedEvents = [])
+    {
+        $this->allowedEvents = $allowedEvents;
+    }
+
+    /**
      * Make and return event.
      *
-     * @param string  $eventName
      * @param mixed[] $serialized
      *
-     * @return EventInterface
-     *
-     * @throws EventDoesNotExists
+     * @throws EventDoesNotExist
      */
     public function makeEvent(string $eventName, array $serialized): EventInterface
     {
-        if (!class_exists($eventName)) {
-            throw new EventDoesNotExists(sprintf('Event \'%s\' doesn\'t exists.', $eventName));
+        if (!isset($this->allowedEvents[$eventName])) {
+            throw new EventDoesNotExist(sprintf('Event \'%s\' doesn\'t exist.', $eventName));
         }
+        $event = $this->allowedEvents[$eventName];
 
-        return $eventName::deserialize($serialized);
+        return $event::deserialize($serialized);
     }
 
     /**
      * Make and return event stream aggregator.
      *
-     * @param EventInterface $event
+     * @psalm-sup
      *
-     * @return DomainEventStream
+     * @return DomainEventStream<int, DomainMessage>
      */
     public function makeEventStream(EventInterface $event): DomainEventStream
     {

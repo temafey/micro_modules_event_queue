@@ -13,8 +13,6 @@ interface QueueEventInterface
 {
     /**
      * Publish event to queue.
-     *
-     * @param Serializable $event
      */
     public function publishEventToQueue(Serializable $event): void;
 }
