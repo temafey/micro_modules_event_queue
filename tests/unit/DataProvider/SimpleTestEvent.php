@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace MicroModule\EventQueue\Tests\Unit\DataProvider;
 
 use Broadway\Serializer\Serializable;
+use MicroModule\EventQueue\Domain\EventHandling\EventInterface;
+use Ramsey\Uuid\Uuid;
+use Ramsey\Uuid\UuidInterface;
 
-class SimpleTestEvent implements Serializable
+class SimpleTestEvent implements Serializable, EventInterface
 {
     /**
      * @var mixed[]
@@ -24,18 +27,23 @@ class SimpleTestEvent implements Serializable
     }
 
     /**
-     * {@inheritdoc}
+     * @param array<string, mixed> $data
      */
     public static function deserialize(array $data)
     {
-        return new static($data['data']);
+        return new self($data['data']);
     }
 
     /**
-     * {@inheritdoc}
+     * @return array<string, mixed>
      */
     public function serialize(): array
     {
         return ['data' => $this->data];
+    }
+
+    public function getUuid(): UuidInterface
+    {
+        return Uuid::uuid4();
     }
 }

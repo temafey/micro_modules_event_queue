@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace MicroModule\EventQueue\Application\EventHandling;
 
-use MicroModule\EventQueue\Domain\EventHandling\QueueEventInterface;
-use MicroModule\EventQueue\Domain\EventHandling\ShouldQueue;
 use Broadway\Domain\DomainEventStream;
 use Broadway\Domain\DomainMessage;
 use Broadway\EventHandling\EventBus;
 use Broadway\EventHandling\EventListener;
+use MicroModule\EventQueue\Domain\EventHandling\QueueEventInterface;
+use MicroModule\EventQueue\Domain\EventHandling\ShouldQueue;
 
 /**
  * Event bus that is able to publish events to queue.
@@ -32,9 +32,6 @@ final class QueueEventBus implements EventBus
 
     /**
      * QueueEventBus constructor.
-     *
-     * @param EventBus            $simpleEventBus
-     * @param QueueEventInterface $queueResolver
      */
     public function __construct(EventBus $simpleEventBus, QueueEventInterface $queueResolver)
     {
@@ -51,7 +48,7 @@ final class QueueEventBus implements EventBus
     }
 
     /**
-     * {@inheritdoc}
+     * @param DomainEventStream<int, DomainMessage> $domainMessages
      *
      * @psalm-suppress InvalidArgument
      */

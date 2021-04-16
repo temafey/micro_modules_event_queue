@@ -4,11 +4,6 @@ declare(strict_types=1);
 
 namespace MicroModule\EventQueue\Tests\Unit\Application\EventHandling;
 
-use MicroModule\EventQueue\Application\EventHandling\QueueEventBus;
-use MicroModule\EventQueue\Application\EventHandling\QueueEventProducer;
-use MicroModule\EventQueue\Tests\Unit\DataProvider\QueueableTestEvent;
-use MicroModule\EventQueue\Tests\Unit\DataProvider\SimpleTestEvent;
-use MicroModule\EventQueue\Tests\Unit\DataProvider\TestEventProcessor;
 use Broadway\Domain\DateTime;
 use Broadway\Domain\DomainEventStream;
 use Broadway\Domain\DomainMessage;
@@ -17,6 +12,11 @@ use Broadway\EventHandling\EventBus;
 use Broadway\EventHandling\TraceableEventBus;
 use Enqueue\Client\ProducerInterface;
 use Enqueue\Client\TraceableProducer;
+use MicroModule\EventQueue\Application\EventHandling\QueueEventBus;
+use MicroModule\EventQueue\Application\EventHandling\QueueEventProducer;
+use MicroModule\EventQueue\Tests\Unit\DataProvider\QueueableTestEvent;
+use MicroModule\EventQueue\Tests\Unit\DataProvider\SimpleTestEvent;
+use MicroModule\EventQueue\Tests\Unit\DataProvider\TestEventProcessor;
 use Mockery;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mockery\MockInterface;
@@ -38,8 +38,6 @@ class QueueEventBusTest extends TestCase
      *
      * @dataProvider \MicroModule\EventQueue\Tests\Unit\DataProvider\EventQueueDataProvider::getData()
      *
-     * @param int     $id
-     * @param int     $playhead
      * @param mixed[] $meta
      * @param mixed[] $payload
      */
@@ -71,8 +69,6 @@ class QueueEventBusTest extends TestCase
      *
      * @dataProvider \MicroModule\EventQueue\Tests\Unit\DataProvider\EventQueueDataProvider::getData()
      *
-     * @param int     $id
-     * @param int     $playhead
      * @param mixed[] $meta
      * @param mixed[] $payload
      */
@@ -100,8 +96,6 @@ class QueueEventBusTest extends TestCase
     /**
      * Return ProducerInterface mock object.
      *
-     * @param int $times
-     *
      * @return MockInterface|ProducerInterface
      */
     protected function makeProducerMock(int $times): MockInterface
@@ -117,8 +111,6 @@ class QueueEventBusTest extends TestCase
 
     /**
      * Return EventBus mock object.
-     *
-     * @param int $times
      *
      * @return MockInterface|EventBus
      */

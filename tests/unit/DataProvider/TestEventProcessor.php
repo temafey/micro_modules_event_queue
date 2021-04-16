@@ -11,9 +11,6 @@ use MicroModule\EventQueue\Application\EventHandling\QueueEventProcessor;
  */
 class TestEventProcessor extends QueueEventProcessor
 {
-    /**
-     * @return string
-     */
     public static function getTopic(): string
     {
         return 'yes';

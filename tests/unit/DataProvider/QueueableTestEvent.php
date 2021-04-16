@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace MicroModule\EventQueue\Tests\Unit\DataProvider;
 
-use MicroModule\EventQueue\Domain\EventHandling\ShouldQueue;
 use Broadway\Serializer\Serializable;
+use MicroModule\EventQueue\Domain\EventHandling\ShouldQueue;
 
 class QueueableTestEvent implements Serializable, ShouldQueue
 {
@@ -25,15 +25,15 @@ class QueueableTestEvent implements Serializable, ShouldQueue
     }
 
     /**
-     * {@inheritdoc}
+     * @param array<string, mixed> $data
      */
     public static function deserialize(array $data)
     {
-        return new static($data['data']);
+        return new self($data['data']);
     }
 
     /**
-     * {@inheritdoc}
+     * @return array<string, mixed>
      */
     public function serialize(): array
     {

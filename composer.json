@@ -4,17 +4,18 @@
     "description": "Micro module Event Queue library",
     "license": "proprietary",
     "require": {
-        "php": "^7.3",
-        "micro-module/command-bus": "^v0.4",
+        "php": "^7.3 || ^8.0",
+        "beberlei/assert": "^3.3",
         "broadway/broadway": "^2.1",
         "broadway/broadway-bundle": "^0.4",
-        "beberlei/assert": "^3.2",
-        "queue-interop/amqp-interop": "^0.8",
-        "queue-interop/queue-interop": "^0.7|^0.8",
         "enqueue/enqueue": "^0.10",
         "enqueue/fs": "^0.10",
         "enqueue/job-queue": "^0.10",
-        "psr/log": "^1.1"
+        "micro-module/base": "^0.7.0",
+        "micro-module/command-bus": "^v0.5",
+        "psr/log": "^1.1",
+        "queue-interop/amqp-interop": "^0.8",
+        "queue-interop/queue-interop": "^0.7|^0.8"
     },
     "require-dev": {
         "enqueue/null": "^0.10",
@@ -27,8 +28,8 @@
         "phpstan/phpstan-phpunit": "^0.12",
         "phpunit/phpunit": "^9.0",
         "roave/security-advisories": "dev-master",
-        "sensiolabs-de/deptrac-shim": "^0.4",
-        "symplify/easy-coding-standard": "^7.2",
+        "sensiolabs-de/deptrac-shim": "^0.12",
+        "symplify/easy-coding-standard": "^9.2",
         "vimeo/psalm": "^3.11"
     },
     "config": {

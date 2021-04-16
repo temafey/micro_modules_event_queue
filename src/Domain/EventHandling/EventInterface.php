@@ -14,8 +14,6 @@ interface EventInterface
 {
     /**
      * Return UUID ValueObject.
-     *
-     * @return UuidInterface
      */
     public function getUuid(): UuidInterface;
 }
