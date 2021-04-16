@@ -6,8 +6,8 @@
     "require": {
         "php": "^7.3 || ^8.0",
         "beberlei/assert": "^3.3",
-        "broadway/broadway": "^2.1",
-        "broadway/broadway-bundle": "^0.4",
+        "broadway/broadway": "^2.3",
+        "broadway/broadway-bundle": "^0.5",
         "enqueue/enqueue": "^0.10",
         "enqueue/fs": "^0.10",
         "enqueue/job-queue": "^0.10",
