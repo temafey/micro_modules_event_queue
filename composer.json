@@ -8,7 +8,7 @@
         "beberlei/assert": "^3.3",
         "broadway/broadway": "^2.3",
         "broadway/broadway-bundle": "^0.6",
-        "enqueue/enqueue": "^0.10",
+        "micro-module/enqueue": "^0.10",
         "enqueue/fs": "^0.10",
         "micro-module/job-queue": "^0.10",
         "micro-module/base": "^0.7",
