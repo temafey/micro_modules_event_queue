@@ -15,35 +15,36 @@ use MicroModule\EventQueue\Domain\EventHandling\QueueEventInterface;
  */
 class QueueEventProducer implements QueueEventInterface
 {
-    /**
-     * Queue producer.
-     *
-     * @var ProducerInterface
-     */
-    private $queueProducer;
+    protected const FIELD_EVENT = 'event';
+    protected const FIELD_SERIALIZED = 'serialized';
+
+    protected ProducerInterface $queueProducer;
 
     /**
-     * @var QueueEventProcessor
+     * Queue topic name to producer events.
      */
-    private $queueEventProcessor;
+    protected string|QueueEventProcessor $topic;
 
-    /**
-     * QueueEventProducer constructor.
-     */
     public function __construct(
         ProducerInterface $queueProducer,
-        QueueEventProcessor $queueEventProcessor
+        string|QueueEventProcessor $topic
     ) {
         $this->queueProducer = $queueProducer;
-        $this->queueEventProcessor = $queueEventProcessor;
+        $this->topic = $topic;
     }
 
     /**
-     * Send job event to queue.
+     * Publish event to queue.
      */
     public function publishEventToQueue(Serializable $event): void
     {
-        $message = ['event' => get_class($event), 'serialize' => $event->serialize()];
-        $this->queueProducer->sendEvent($this->queueEventProcessor::getTopic(), $message);
+        $topicName = ($this->topic instanceof QueueEventProcessor) ? $this->topic::getTopic() : $this->topic;
+        $this->queueProducer->sendEvent(
+            $topicName,
+            [
+                self::FIELD_EVENT => get_class($event),
+                self::FIELD_SERIALIZED => $event->serialize()
+            ]
+        );
     }
 }
