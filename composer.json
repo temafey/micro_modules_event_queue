@@ -7,7 +7,7 @@
         "php": "^7.3 || ^8.0",
         "beberlei/assert": "^3.3",
         "micro-module/broadway": "^2.3",
-        "broadway-bundle/broadway-bundle": "^0.6",
+        "micro-module/broadway-bundle": "^0.6",
         "micro-module/enqueue": "^0.10",
         "enqueue/fs": "^0.10",
         "micro-module/job-queue": "^0.10",
