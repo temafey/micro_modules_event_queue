@@ -11,7 +11,7 @@
         "micro-module/enqueue": "^0.10",
         "micro-module/enqueue-fs": "^0.10",
         "micro-module/job-queue": "^0.10",
-        "micro-module/base": "^0.8",
+        "micro-module/base": "^0.9",
         "micro-module/command-bus": "^0.5",
         "psr/log": "^1.1",
         "queue-interop/amqp-interop": "^0.8",
