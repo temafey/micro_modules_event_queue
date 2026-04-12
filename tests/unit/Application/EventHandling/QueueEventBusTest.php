@@ -10,17 +10,25 @@ use Broadway\Domain\DomainMessage;
 use Broadway\Domain\Metadata;
 use Broadway\EventHandling\EventBus;
 use Broadway\EventHandling\TraceableEventBus;
+use Broadway\Serializer\Serializable;
 use Enqueue\Client\ProducerInterface;
 use Enqueue\Client\TraceableProducer;
+use InvalidArgumentException;
 use MicroModule\EventQueue\Application\EventHandling\QueueEventBus;
 use MicroModule\EventQueue\Application\EventHandling\QueueEventProducer;
+use MicroModule\EventQueue\Application\EventHandling\QueueEventProducerException;
+use MicroModule\EventQueue\Domain\EventHandling\QueueEventInterface;
+use MicroModule\EventQueue\Domain\EventHandling\ShouldQueue;
+use MicroModule\EventQueue\Domain\EventHandling\ShouldQueueDuplicate;
 use MicroModule\EventQueue\Tests\Unit\DataProvider\QueueableTestEvent;
 use MicroModule\EventQueue\Tests\Unit\DataProvider\SimpleTestEvent;
 use MicroModule\EventQueue\Tests\Unit\DataProvider\TestEventProcessor;
 use Mockery;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mockery\MockInterface;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 /**
  * Event bus that is able to publish events to queue.
@@ -137,5 +145,191 @@ class QueueEventBusTest extends TestCase
             ->zeroOrMoreTimes();
 
         return $mock;
+    }
+
+    // =========================================================================
+    // VP-2 mode parameter tests
+    // =========================================================================
+
+    /**
+     * Helper: wrap a payload in a single-event DomainEventStream.
+     */
+    private function makeStream(object $event): DomainEventStream
+    {
+        return new DomainEventStream([
+            DomainMessage::recordNow('aggregate-id', 0, new Metadata([]), $event),
+        ]);
+    }
+
+    /**
+     * Scenario 1: STRICT + null resolver + ShouldQueue event → QueueEventProducerException.
+     *
+     * @test
+     * @group unit
+     */
+    public function strictModeThrowsWhenQueueResolverIsNullForShouldQueueEvent(): void
+    {
+        $event = new class implements ShouldQueue, Serializable {
+            public function serialize(): array { return []; }
+            public static function deserialize(array $data): static { return new static(); }
+        };
+
+        $simpleEventBus = Mockery::mock(EventBus::class);
+        $bus = new QueueEventBus(
+            simpleEventBus: $simpleEventBus,
+            queueResolver: null,
+            queueResolverDuplicate: null,
+            mode: QueueEventBus::MODE_STRICT,
+        );
+
+        $this->expectException(QueueEventProducerException::class);
+        $this->expectExceptionMessage('Queue resolver to publish events to queue was not set.');
+
+        $bus->publish($this->makeStream($event));
+    }
+
+    /**
+     * Scenario 2: STRICT + null resolverDuplicate + ShouldQueueDuplicate event → QueueEventProducerException.
+     *
+     * @test
+     * @group unit
+     */
+    public function strictModeThrowsWhenQueueResolverDuplicateIsNullForShouldQueueDuplicateEvent(): void
+    {
+        $event = new class implements ShouldQueueDuplicate, Serializable {
+            public function serialize(): array { return []; }
+            public static function deserialize(array $data): static { return new static(); }
+        };
+
+        $simpleEventBus = Mockery::mock(EventBus::class);
+        $bus = new QueueEventBus(
+            simpleEventBus: $simpleEventBus,
+            queueResolver: null,
+            queueResolverDuplicate: null,
+            mode: QueueEventBus::MODE_STRICT,
+        );
+
+        $this->expectException(QueueEventProducerException::class);
+        $this->expectExceptionMessage('Queue resolver to duplicate events to queue was not set.');
+
+        $bus->publish($this->makeStream($event));
+    }
+
+    /**
+     * Scenario 3: PERMISSIVE + null resolver + ShouldQueue event → no throw, debug logged once.
+     *
+     * @test
+     * @group unit
+     */
+    public function permissiveModeSkipsShouldQueueEventAndLogsDebugWhenResolverIsNull(): void
+    {
+        $event = new class implements ShouldQueue, Serializable {
+            public function serialize(): array { return []; }
+            public static function deserialize(array $data): static { return new static(); }
+        };
+
+        /** @var LoggerInterface&MockObject $logger */
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->once())
+            ->method('debug')
+            ->with(
+                'ShouldQueue event skipped (permissive mode)',
+                $this->arrayHasKey('event_class')
+            );
+
+        $simpleEventBus = Mockery::mock(EventBus::class);
+        $bus = new QueueEventBus(
+            simpleEventBus: $simpleEventBus,
+            queueResolver: null,
+            queueResolverDuplicate: null,
+            mode: QueueEventBus::MODE_PERMISSIVE,
+            logger: $logger,
+        );
+
+        $bus->publish($this->makeStream($event));
+    }
+
+    /**
+     * Scenario 4: PERMISSIVE + null resolverDuplicate + ShouldQueueDuplicate event → no throw, debug logged once.
+     *
+     * @test
+     * @group unit
+     */
+    public function permissiveModeSkipsShouldQueueDuplicateEventAndLogsDebugWhenResolverIsNull(): void
+    {
+        $event = new class implements ShouldQueueDuplicate, Serializable {
+            public function serialize(): array { return []; }
+            public static function deserialize(array $data): static { return new static(); }
+        };
+
+        /** @var LoggerInterface&MockObject $logger */
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->once())
+            ->method('debug')
+            ->with(
+                'ShouldQueueDuplicate event skipped (permissive mode)',
+                $this->arrayHasKey('event_class')
+            );
+
+        $simpleEventBus = Mockery::mock(EventBus::class);
+        // ShouldQueueDuplicate-only events still fall through to local bus (not ShouldQueue, so no `continue`)
+        $simpleEventBus->shouldReceive('publish')->once();
+        $bus = new QueueEventBus(
+            simpleEventBus: $simpleEventBus,
+            queueResolver: null,
+            queueResolverDuplicate: null,
+            mode: QueueEventBus::MODE_PERMISSIVE,
+            logger: $logger,
+        );
+
+        $bus->publish($this->makeStream($event));
+    }
+
+    /**
+     * Scenario 5: STRICT + present resolver + ShouldQueue event → resolver->publishEventToQueue() called once.
+     *
+     * @test
+     * @group unit
+     */
+    public function strictModeCallsResolverPublishEventToQueueWhenResolverIsPresent(): void
+    {
+        $event = new class implements ShouldQueue, Serializable {
+            public function serialize(): array { return []; }
+            public static function deserialize(array $data): static { return new static(); }
+        };
+
+        /** @var QueueEventInterface&MockObject $resolver */
+        $resolver = $this->createMock(QueueEventInterface::class);
+        $resolver->expects($this->once())
+            ->method('publishEventToQueue')
+            ->with($event);
+
+        $simpleEventBus = Mockery::mock(EventBus::class);
+        $bus = new QueueEventBus(
+            simpleEventBus: $simpleEventBus,
+            queueResolver: $resolver,
+            queueResolverDuplicate: null,
+            mode: QueueEventBus::MODE_STRICT,
+        );
+
+        $bus->publish($this->makeStream($event));
+    }
+
+    /**
+     * Scenario 6: Constructor with invalid mode string → InvalidArgumentException.
+     *
+     * @test
+     * @group unit
+     */
+    public function constructorThrowsInvalidArgumentExceptionForUnknownMode(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid QueueEventBus mode "bogus".');
+
+        $simpleEventBus = Mockery::mock(EventBus::class);
+        new QueueEventBus(
+            simpleEventBus: $simpleEventBus,
+            mode: 'bogus',
+        );
     }
 }
