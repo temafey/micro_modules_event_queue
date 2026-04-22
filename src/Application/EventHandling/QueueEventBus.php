@@ -42,6 +42,7 @@ final class QueueEventBus implements EventBusInterface
         private readonly ?QueueEventInterface $queueResolverDuplicate = null,
         private readonly string $mode = self::MODE_STRICT,
         ?LoggerInterface $logger = null,
+        private readonly bool $directPublishEnabled = true,
     ) {
         if (!in_array($mode, [self::MODE_STRICT, self::MODE_PERMISSIVE], true)) {
             throw new InvalidArgumentException(
@@ -69,7 +70,7 @@ final class QueueEventBus implements EventBusInterface
 
             $event = $domainMessage->getPayload();
 
-            if ($event instanceof ShouldQueueDuplicate) {
+            if ($this->directPublishEnabled && $event instanceof ShouldQueueDuplicate) {
                 if ($this->queueResolverDuplicate !== null) {
                     $this->queueResolverDuplicate->publishEventToQueue($event);
                 } elseif ($this->mode === self::MODE_STRICT) {
@@ -83,7 +84,7 @@ final class QueueEventBus implements EventBusInterface
                 }
             }
 
-            if ($event instanceof ShouldQueue) {
+            if ($this->directPublishEnabled && $event instanceof ShouldQueue) {
                 if ($this->queueResolver !== null) {
                     $this->queueResolver->publishEventToQueue($event);
 

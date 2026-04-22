@@ -9,7 +9,7 @@ class EventFactoryDataProvider
     /**
      * @return mixed[]
      */
-    public function getMakeEventReturnsAllowedEventData(): array
+    public static function getMakeEventReturnsAllowedEventData(): array
     {
         return [
             [
@@ -29,7 +29,7 @@ class EventFactoryDataProvider
     /**
      * @return mixed[]
      */
-    public function getMakeEventThrowsExceptionIfNotAllowedEventData(): array
+    public static function getMakeEventThrowsExceptionIfNotAllowedEventData(): array
     {
         return [
             [

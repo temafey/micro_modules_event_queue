@@ -98,7 +98,7 @@ class QueueEventBusTest extends TestCase
 
         self::assertCount(1, $traces);
         self::assertEquals(QueueableTestEvent::class, $traces[0]['body']['event']);
-        self::assertEquals($payload, $traces[0]['body']['serialize']['data']);
+        self::assertEquals($payload, $traces[0]['body']['serialized']['data']);
     }
 
     /**
@@ -331,5 +331,119 @@ class QueueEventBusTest extends TestCase
             simpleEventBus: $simpleEventBus,
             mode: 'bogus',
         );
+    }
+
+    // =========================================================================
+    // OBX2-DP $directPublishEnabled parameter tests
+    // =========================================================================
+
+    /**
+     * Default ctor (no $directPublishEnabled arg) preserves 0.7.x behaviour — resolver is called.
+     *
+     * @test
+     * @group unit
+     */
+    public function publishesDirectlyWhenFlagOmitted(): void
+    {
+        $event = new class implements ShouldQueue, Serializable {
+            public function serialize(): array { return []; }
+            public static function deserialize(array $data): static { return new static(); }
+        };
+
+        /** @var QueueEventInterface&MockObject $resolver */
+        $resolver = $this->createMock(QueueEventInterface::class);
+        $resolver->expects($this->once())
+            ->method('publishEventToQueue')
+            ->with($event);
+
+        $simpleEventBus = Mockery::mock(EventBus::class);
+        $bus = new QueueEventBus(
+            simpleEventBus: $simpleEventBus,
+            queueResolver: $resolver,
+        );
+
+        $bus->publish($this->makeStream($event));
+    }
+
+    /**
+     * $directPublishEnabled=false: resolver is NOT called even when present; simpleEventBus
+     * receives the event (fall-through to $nonQueuedEvents).
+     *
+     * @test
+     * @group unit
+     */
+    public function skipsDirectPublishWhenFlagFalse(): void
+    {
+        $event = new class implements ShouldQueue, Serializable {
+            public function serialize(): array { return []; }
+            public static function deserialize(array $data): static { return new static(); }
+        };
+
+        /** @var QueueEventInterface&MockObject $resolver */
+        $resolver = $this->createMock(QueueEventInterface::class);
+        $resolver->expects($this->never())
+            ->method('publishEventToQueue');
+
+        $simpleEventBus = Mockery::mock(EventBus::class);
+        $simpleEventBus->shouldReceive('publish')->once();
+
+        $bus = new QueueEventBus(
+            simpleEventBus: $simpleEventBus,
+            queueResolver: $resolver,
+            queueResolverDuplicate: null,
+            mode: QueueEventBus::MODE_STRICT,
+            logger: null,
+            directPublishEnabled: false,
+        );
+
+        $bus->publish($this->makeStream($event));
+    }
+
+    /**
+     * Behaviour-change guard: when $directPublishEnabled=false, the `continue` on the ShouldQueue
+     * branch is gated by the outer `if`, so ShouldQueue events fall through to projectors via
+     * $simpleEventBus (they no longer bypass the simple bus).
+     *
+     * @test
+     * @group unit
+     */
+    public function shouldQueueFallsThroughToProjectorsWhenDirectDisabled(): void
+    {
+        $event = new class implements ShouldQueue, Serializable {
+            public function serialize(): array { return []; }
+            public static function deserialize(array $data): static { return new static(); }
+        };
+
+        /** @var QueueEventInterface&MockObject $resolver */
+        $resolver = $this->createMock(QueueEventInterface::class);
+        $resolver->expects($this->never())
+            ->method('publishEventToQueue');
+
+        /** @var QueueEventInterface&MockObject $resolverDuplicate */
+        $resolverDuplicate = $this->createMock(QueueEventInterface::class);
+        $resolverDuplicate->expects($this->never())
+            ->method('publishEventToQueue');
+
+        // The assertion that PROVES the fall-through: simpleEventBus receives a stream
+        // containing exactly 1 ShouldQueue event.
+        $simpleEventBus = Mockery::mock(EventBus::class);
+        $simpleEventBus->shouldReceive('publish')
+            ->once()
+            ->with(Mockery::on(function (DomainEventStream $stream): bool {
+                $messages = iterator_to_array($stream->getIterator());
+                return count($messages) === 1
+                    && $messages[0]->getPayload() instanceof ShouldQueue;
+            }));
+
+        $bus = new QueueEventBus(
+            simpleEventBus: $simpleEventBus,
+            queueResolver: $resolver,
+            queueResolverDuplicate: $resolverDuplicate,
+            mode: QueueEventBus::MODE_STRICT,
+            logger: null,
+            directPublishEnabled: false,
+        );
+
+        $bus->publish($this->makeStream($event));
     }
 }

@@ -16,7 +16,7 @@ class EventQueueDataProvider
      *
      * @return mixed[]
      */
-    public function getData(): array
+    public static function getData(): array
     {
         return [
             [1, 1, [], ['event 1']],
